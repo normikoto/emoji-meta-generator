@@ -45,16 +45,18 @@ def main() -> None:
     ap.add_argument("--emoji-path", "-p",
                     help="Location of emojis.", required=True)
     ap.add_argument("--category", "-c",
-                    help="Category name.", required=True)
+                    help="Category name.")
     args = ap.parse_args()
+    emoji_path = pathlib.Path(args.emoji_path)
+    category = args.category if args.category is not None else emoji_path.name
     
-    os.chdir(args.emoji_path)
+    os.chdir(emoji_path)
     files = []
     for img_glob in IMAGE_GLOBS:
         files.extend(glob.glob(img_glob))
     
-    meta = generate_meta(files, args.category)
-    with open(pathlib.Path(args.emoji_path) / "meta.json", "w") as f:
+    meta = generate_meta(files, category)
+    with open(emoji_path / "meta.json", "w") as f:
         json.dump(meta, f)
 
 if __name__ == '__main__':
