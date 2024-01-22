@@ -3,8 +3,7 @@ import json
 import argparse
 import datetime
 import pathlib
-import os
-import glob
+import zipfile
 from typing import Literal, TypedDict
 
 # TODO: maybe addd *.avif?
@@ -33,17 +32,13 @@ class Pack(TypedDict):
     pack: dict
     count: int
 
-def generate_name_to_file_dict(files: list[str]) -> dict[str, str]:
+def generate_name_to_file_dict(files: list[pathlib.Path]) -> dict[str, str]:
     """
     Return a dictionary that contains a mapping from emoji name to the emoji filename.
     """
-    result = {}
-    for f in files:
-        path = pathlib.PurePath(f)
-        result[path.stem] = path.name
-    return result
+    return {f.stem: f.name for f in files}
 
-def generate_meta(files: list[str], category: str) -> Meta:
+def generate_meta(files: list[pathlib.Path], category: str) -> Meta:
     date = datetime.datetime.now()
     meta = {
         "metaVersion": 2,
@@ -67,7 +62,7 @@ def generate_meta(files: list[str], category: str) -> Meta:
     meta["emojis"] = emojis
     return meta
 
-def generate_pack(files: list[str]) -> Pack:
+def generate_pack(files: list[pathlib.Path]) -> Pack:
     return {
         "files": generate_name_to_file_dict(files),
         "pack": {},
@@ -80,22 +75,36 @@ def main() -> None:
                     help="Location of emojis.", required=True)
     ap.add_argument("--category", "-c",
                     help="Category name.")
+    ap.add_argument("--create-zip", "-z", action="store_true",
+                    help="Create a zip archive with the emojis")
     args = ap.parse_args()
     emoji_path = pathlib.Path(args.emoji_path)
     category = args.category if args.category is not None else emoji_path.name
     
-    os.chdir(emoji_path)
-    files = []
+    files: list[pathlib.Path] = []
     for img_glob in IMAGE_GLOBS:
-        files.extend(glob.glob(img_glob))
+        files.extend(emoji_path.glob(img_glob))
     
     meta = generate_meta(files, category)
-    with open(emoji_path / "meta.json", "w") as f:
+    meta_file = emoji_path / "meta.json"
+    with open(meta_file, "w") as f:
         json.dump(meta, f)
     
     pack = generate_pack(files)
-    with open(emoji_path / "pack.json", "w") as f:
+    pack_file = emoji_path / "pack.json"
+    with open(pack_file, "w") as f:
         json.dump(pack, f)
+
+    if args.create_zip:
+        zip_path = emoji_path / f"{category}.zip"
+        with zipfile.ZipFile(zip_path, mode="w",
+                             compression=zipfile.ZIP_DEFLATED,
+                             compresslevel=9) as zipf:
+            zipf.write(meta_file, arcname=meta_file.name)
+            zipf.write(pack_file, arcname=pack_file.name)
+            for image in files:
+                zipf.write(image, arcname=image.name)
+        print(f"Created ZIP file at {zip_path}")
 
 if __name__ == '__main__':
     main()
