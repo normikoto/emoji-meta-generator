@@ -89,12 +89,13 @@ def main() -> None:
     meta_path = emoji_path / "meta.json"
     with open(meta_path, "w") as f:
         json.dump(meta, f)
-    files.append(meta_path)
     
     pack = generate_pack(files)
     pack_path = emoji_path / "pack.json"
     with open(pack_path, "w") as f:
         json.dump(pack, f)
+    
+    files.append(meta_path)
     files.append(pack_path)
 
     if args.create_zip:
