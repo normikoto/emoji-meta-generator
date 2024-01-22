@@ -86,25 +86,26 @@ def main() -> None:
         files.extend(emoji_path.glob(img_glob))
     
     meta = generate_meta(files, category)
-    meta_file = emoji_path / "meta.json"
-    with open(meta_file, "w") as f:
+    meta_path = emoji_path / "meta.json"
+    with open(meta_path, "w") as f:
         json.dump(meta, f)
+    files.append(meta_path)
     
     pack = generate_pack(files)
-    pack_file = emoji_path / "pack.json"
-    with open(pack_file, "w") as f:
+    pack_path = emoji_path / "pack.json"
+    with open(pack_path, "w") as f:
         json.dump(pack, f)
+    files.append(pack_path)
 
     if args.create_zip:
         zip_path = emoji_path / f"{category}.zip"
-        with zipfile.ZipFile(zip_path, mode="w",
-                             compression=zipfile.ZIP_DEFLATED,
-                             compresslevel=9) as zipf:
-            zipf.write(meta_file, arcname=meta_file.name)
-            zipf.write(pack_file, arcname=pack_file.name)
-            for image in files:
-                zipf.write(image, arcname=image.name)
-        print(f"Created ZIP file at {zip_path}")
+        make_zipfile(files, zip_path)
+
+def make_zipfile(files: list[pathlib.Path], zip_path: pathlib.Path) -> None:
+    with zipfile.ZipFile(zip_path, mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zipf:
+        for file_path in files:
+            zipf.write(file_path, arcname=file_path.name)
+    print(f"Created ZIP file at {zip_path}")
 
 if __name__ == '__main__':
     main()
