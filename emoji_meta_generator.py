@@ -103,13 +103,13 @@ def main() -> None:
 
     if args.create_zip:
         zip_file = zip_path / f"{category}.zip"
-        make_zipfile(files, zip_path)
+        make_zipfile(files, zip_file)
 
-def make_zipfile(files: list[pathlib.Path], zip_path: pathlib.Path) -> None:
-    with zipfile.ZipFile(zip_path, mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zipf:
+def make_zipfile(files: list[pathlib.Path], zip_file: pathlib.Path) -> None:
+    with zipfile.ZipFile(zip_file, mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zipf:
         for file_path in files:
             zipf.write(file_path, arcname=file_path.name)
-    print(f"Created ZIP file at {zip_path}")
+    print(f"Created ZIP file at {zip_file}")
 
 if __name__ == '__main__':
     main()
