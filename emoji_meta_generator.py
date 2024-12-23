@@ -82,7 +82,6 @@ def main() -> None:
     args = ap.parse_args()
     emoji_path = pathlib.Path(args.emoji_path)
     category = args.category if args.category is not None else emoji_path.name
-    zip_path = pathlib.Path(args.zip_path) if args.zip_path else emoji_path
 
     files: list[pathlib.Path] = []
     for img_glob in IMAGE_GLOBS:
@@ -102,7 +101,7 @@ def main() -> None:
     files.append(pack_path)
 
     if args.create_zip:
-        zip_file = zip_path / f"{category}.zip"
+        zip_file = pathlib.Path(args.zip_path) if args.zip_path else emoji_path / f"{category}.zip"
         make_zipfile(files, zip_file)
 
 def make_zipfile(files: list[pathlib.Path], zip_file: pathlib.Path) -> None:
