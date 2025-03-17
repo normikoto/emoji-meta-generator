@@ -101,6 +101,8 @@ def main() -> None:
                     help="Create a zip archive with the emojis")
     ap.add_argument("--zip-path", "-Z",
                     help="Location to save zip file. Defaults to emoji path. Has no effect if --create-zip/-z is not selected")
+    ap.add_argument("--format", action="append", choices=["akkoma", "misskey"],
+                    help="Emoji pack format to use. Defaults to creating both 'akkoma' (pack.json) and 'misskey' (meta.json) formats")
     args = ap.parse_args()
     emoji_path = pathlib.Path(args.emoji_path)
     category = args.category if args.category is not None else emoji_path.name
@@ -109,22 +111,24 @@ def main() -> None:
     for img_glob in IMAGE_GLOBS:
         files.extend(emoji_path.glob(img_glob))
 
-    meta = generate_meta(files, category)
-    meta_path = emoji_path / "meta.json"
-    with open(meta_path, "w") as f:
-        json.dump(meta, f)
+    zip_files = files[:]
+    if "misskey" in formats:
+        meta = generate_meta(files, category)
+        meta_path = emoji_path / "meta.json"
+        with open(meta_path, "w") as f:
+            json.dump(meta, f)
+        zip_files.append(meta_path)
 
-    pack = generate_pack(files)
-    pack_path = emoji_path / "pack.json"
-    with open(pack_path, "w") as f:
-        json.dump(pack, f)
-
-    files.append(meta_path)
-    files.append(pack_path)
+    if "akkoma" in formats:
+        pack = generate_pack(files)
+        pack_path = emoji_path / "pack.json"
+        with open(pack_path, "w") as f:
+            json.dump(pack, f)
+        zip_files.append(pack_path)
 
     if args.create_zip:
         zip_file = pathlib.Path(args.zip_path) if args.zip_path else emoji_path / f"{category}.zip"
-        make_zipfile(files, zip_file)
+        make_zipfile(zip_files, zip_file)
 
 def make_zipfile(files: list[pathlib.Path], zip_file: pathlib.Path) -> None:
     with zipfile.ZipFile(zip_file, mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zipf:
