@@ -75,7 +75,6 @@ def generate_meta(files: list[pathlib.Path], category: str) -> Meta:
             }
         })
 
-    meta["emojis"] = emojis
     return meta
 
 def generate_pack(files: list[pathlib.Path]) -> Pack:
