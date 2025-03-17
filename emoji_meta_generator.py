@@ -16,10 +16,15 @@ IMAGE_GLOBS = (
     "*.webp",
 )
 
+class MetaEmojiInfo(TypedDict):
+    name: str
+    category: str
+    aliases: list[str]
+
 class MetaEmoji(TypedDict):
     downloaded: bool
     fileName: str
-    emoji: TypedDict('emoji', {"name": str, "category": str, "aliases": list})
+    emoji: MetaEmojiInfo
 
 class Meta(TypedDict):
     metaVersion: Literal[2]
@@ -34,22 +39,33 @@ class Pack(TypedDict):
 
 def generate_name_to_file_dict(files: list[pathlib.Path]) -> dict[str, str]:
     """
-    Return a dictionary that contains a mapping from emoji name to the emoji filename.
+    Return a dictionary that contains a mapping from emoji name to the emoji
+    filename.
+
+    :param files: A list of files
+    :returns: A dict mapping the emoji name to the emoji filepath
     """
     return {f.stem: f.name for f in files}
 
 def generate_meta(files: list[pathlib.Path], category: str) -> Meta:
+    """
+    Generate a dict that complies with the Misskey meta.json format.
+
+    :param files: A list of files to include
+    :param category: Name of the emoji category
+    :returns: A dictionary in the Misskey meta.json format
+    """
     date = datetime.datetime.now()
-    meta = {
+    meta: Meta = {
         "metaVersion": 2,
         "host": "placeholder.localdomain",
         "exportedAt": date.isoformat(),
+        "emojis": []
     }
-    emojis = []
 
     files_dict = generate_name_to_file_dict(files)
     for emoji_name, file_name in files_dict.items():
-        emojis.append({
+        meta["emojis"].append({
             "downloaded": True,
             "fileName": file_name,
             "emoji": {
@@ -58,11 +74,17 @@ def generate_meta(files: list[pathlib.Path], category: str) -> Meta:
                 "aliases": []
             }
         })
-    
+
     meta["emojis"] = emojis
     return meta
 
 def generate_pack(files: list[pathlib.Path]) -> Pack:
+    """
+    Generate a dict that complies with the Pleroma/Akkoma pack.json format.
+
+    :param files: A list of files to include
+    :returns: A dictionary in the Pleroma/Akkoma pack.json format
+    """
     return {
         "files": generate_name_to_file_dict(files),
         "pack": {},
