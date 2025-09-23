@@ -105,7 +105,7 @@ def main() -> None:
     args = ap.parse_args()
     emoji_path = pathlib.Path(args.emoji_path)
     category = args.category if args.category is not None else emoji_path.name
-    formats = args.fomat if args.format else ["misskey", "akkoma"]
+    formats = args.format if args.format else ["misskey", "akkoma"]
 
     files: list[pathlib.Path] = []
     for img_glob in IMAGE_GLOBS:
