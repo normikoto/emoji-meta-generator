@@ -1,3 +1,5 @@
+# Fediverse Emoji Metadata Generator
+
 This is a script that generates metadata files for emoji packs so that they can be used in various Fediverse server software.
 Currently supported software are:
 - [Pleroma](https://git.pleroma.social/pleroma/pleroma) and forks such as [Akkoma](https://akkoma.dev/AkkomaGang/akkoma/) (`pack.json`)
