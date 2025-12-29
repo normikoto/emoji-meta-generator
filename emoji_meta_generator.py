@@ -35,7 +35,7 @@ class Meta(TypedDict):
 class Pack(TypedDict):
     files: dict[str, str]
     pack: dict
-    count: int
+    files_count: int
 
 def generate_name_to_file_dict(files: list[pathlib.Path]) -> dict[str, str]:
     """
@@ -87,7 +87,7 @@ def generate_pack(files: list[pathlib.Path]) -> Pack:
     return {
         "files": generate_name_to_file_dict(files),
         "pack": {},
-        "count": len(files),
+        "files_count": len(files),
     }
 
 def main() -> None:
